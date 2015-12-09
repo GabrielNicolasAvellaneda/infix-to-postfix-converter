@@ -12,19 +12,27 @@ def operator_precedence(op):
             "*": 3,
             "/": 3,
             "+": 2,
-            "-": 2
+            "-": 2,
+            "(": 1
             }
     return precedences[op]
 
 def infix_to_postfix(infix_expression):
     result = []
     operators_stack = []
-    operators = "+-/*"
     for token in infix_expression.split():
-        if token in operators:
+        if token in "+-/*":
             while not stack_is_empty(operators_stack) and operator_precedence(stack_peek(operators_stack)) >= operator_precedence(token):
                 result.append(operators_stack.pop())
             operators_stack.append(token)
+        elif token in "(":
+            operators_stack.append(token)
+        elif token in ")":
+            while not stack_is_empty(operators_stack):
+                top_operator = operators_stack.pop() 
+                if top_operator == "(":
+                    break
+                result.append(top_operator)
         else:
             result.append(token)
 
@@ -56,6 +64,12 @@ class InfixToPostfixConverterTest(unittest.TestCase):
         self.assertEqual("2 4 3 * + 5 2 * +", result)
         result = infix_to_postfix("4 / 2 * 3")
         self.assertEqual("4 2 / 3 *", result)
+
+    def test_expression_with_parenthesis(self):
+        result = infix_to_postfix("( 2 + 3 ) * ( 4 + 5 )")
+        self.assertEqual("2 3 + 4 5 + *", result) 
+        result = infix_to_postfix("( 2 * 3 ) / ( 4 + 5 * ( 2 + 1 ) )")
+        self.assertEqual("2 3 * 4 5 2 1 + * + /", result)
 
 if __name__ == "__main__":
     unittest.main()
